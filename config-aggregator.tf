@@ -3,6 +3,8 @@
 #
 
 data "aws_iam_policy_document" "aws_config_aggregator_role_policy" {
+  count = var.enabled
+
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -16,13 +18,13 @@ data "aws_iam_policy_document" "aws_config_aggregator_role_policy" {
 }
 
 resource "aws_iam_role" "aggregator" {
-  count              = var.aggregate_organization ? 1 : 0
+  count              = var.aggregate_organization && var.enabled == 1 ? 1 : 0
   name               = "aws-config-aggregator-role"
-  assume_role_policy = data.aws_iam_policy_document.aws_config_aggregator_role_policy.json
+  assume_role_policy = data.aws_iam_policy_document.aws_config_aggregator_role_policy[count.index].json
 }
 
 resource "aws_iam_role_policy_attachment" "aggregator" {
-  count      = var.aggregate_organization ? 1 : 0
+  count      = var.aggregate_organization && var.enabled == 1 ? 1 : 0
   role       = aws_iam_role.aggregator[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSConfigRoleForOrganizations"
 }
@@ -32,8 +34,8 @@ resource "aws_iam_role_policy_attachment" "aggregator" {
 #
 
 resource "aws_config_configuration_aggregator" "organization" {
-  count      = var.aggregate_organization ? 1 : 0
-  depends_on = ["aws_iam_role_policy_attachment.aggregator"]
+  count      = var.aggregate_organization && var.enabled == 1 ? 1 : 0
+  depends_on = [aws_iam_role_policy_attachment.aggregator]
   name       = var.config_aggregator_name
 
   organization_aggregation_source {

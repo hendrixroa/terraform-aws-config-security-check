@@ -1,4 +1,6 @@
 data "template_file" "aws_config_acm_certificate_expiration" {
+  count = var.enabled
+
   template = file("${path.module}/config-policies/acm-certificate-expiration.tpl")
 
   vars = {
@@ -11,6 +13,8 @@ data "template_file" "aws_config_acm_certificate_expiration" {
 #
 
 resource "aws_config_config_rule" "cloudtrail-enabled" {
+  count = var.enabled
+
   name        = "cloudtrail-enabled"
   description = "Ensure CloudTrail is enabled"
 
@@ -22,12 +26,14 @@ resource "aws_config_config_rule" "cloudtrail-enabled" {
   maximum_execution_frequency = var.config_max_execution_frequency
 
   depends_on = [
-    "aws_config_configuration_recorder.main",
-    "aws_config_delivery_channel.main",
+    aws_config_configuration_recorder.main,
+    aws_config_delivery_channel.main,
   ]
 }
 
 resource "aws_config_config_rule" "cloud-trail-encryption-enabled" {
+  count = var.enabled
+
   name        = "cloud-trail-encryption-enabled"
   description = "Checks whether AWS CloudTrail is configured to use the server side encryption (SSE) AWS Key Management Service (AWS KMS) customer master key (CMK) encryption. The rule is COMPLIANT if the KmsKeyId is defined."
 
@@ -39,12 +45,14 @@ resource "aws_config_config_rule" "cloud-trail-encryption-enabled" {
   maximum_execution_frequency = var.config_max_execution_frequency
 
   depends_on = [
-    "aws_config_configuration_recorder.main",
-    "aws_config_delivery_channel.main",
+    aws_config_configuration_recorder.main,
+    aws_config_delivery_channel.main,
   ]
 }
 
 resource "aws_config_config_rule" "cloud-trail-log-file-validation-enabled" {
+  count = var.enabled
+
   name        = "cloud-trail-log-file-validation-enabled"
   description = "Checks whether AWS CloudTrail creates a signed digest file with logs. AWS recommends that the file validation must be enabled on all trails. The rule is NON_COMPLIANT if the validation is not enabled."
 
@@ -56,12 +64,14 @@ resource "aws_config_config_rule" "cloud-trail-log-file-validation-enabled" {
   maximum_execution_frequency = var.config_max_execution_frequency
 
   depends_on = [
-    "aws_config_configuration_recorder.main",
-    "aws_config_delivery_channel.main",
+    aws_config_configuration_recorder.main,
+    aws_config_delivery_channel.main,
   ]
 }
 
 resource "aws_config_config_rule" "instances-in-vpc" {
+  count = var.enabled
+
   name        = "instances-in-vpc"
   description = "Ensure all EC2 instances run in a VPC"
 
@@ -71,12 +81,14 @@ resource "aws_config_config_rule" "instances-in-vpc" {
   }
 
   depends_on = [
-    "aws_config_configuration_recorder.main",
-    "aws_config_delivery_channel.main",
+    aws_config_configuration_recorder.main,
+    aws_config_delivery_channel.main,
   ]
 }
 
 resource "aws_config_config_rule" "root-account-mfa-enabled" {
+  count = var.enabled
+
   name        = "root-account-mfa-enabled"
   description = "Ensure root AWS account has MFA enabled"
 
@@ -88,15 +100,17 @@ resource "aws_config_config_rule" "root-account-mfa-enabled" {
   maximum_execution_frequency = var.config_max_execution_frequency
 
   depends_on = [
-    "aws_config_configuration_recorder.main",
-    "aws_config_delivery_channel.main",
+    aws_config_configuration_recorder.main,
+    aws_config_delivery_channel.main,
   ]
 }
 
 resource "aws_config_config_rule" "acm-certificate-expiration-check" {
+  count = var.enabled
+
   name             = "acm-certificate-expiration-check"
   description      = "Ensures ACM Certificates in your account are marked for expiration within the specified number of days"
-  input_parameters = data.template_file.aws_config_acm_certificate_expiration.rendered
+  input_parameters = data.template_file.aws_config_acm_certificate_expiration[count.index].rendered
 
   source {
     owner             = "AWS"
@@ -105,10 +119,12 @@ resource "aws_config_config_rule" "acm-certificate-expiration-check" {
 
   maximum_execution_frequency = var.config_max_execution_frequency
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "ec2-volume-inuse-check" {
+  count = var.enabled
+
   name        = "ec2-volume-inuse-check"
   description = "Checks whether EBS volumes are attached to EC2 instances"
 
@@ -117,10 +133,12 @@ resource "aws_config_config_rule" "ec2-volume-inuse-check" {
     source_identifier = "EC2_VOLUME_INUSE_CHECK"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "iam-user-no-policies-check" {
+  count = var.enabled
+
   name        = "iam-user-no-policies-check"
   description = "Ensure that none of your IAM users have policies attached. IAM users must inherit permissions from IAM groups or roles."
 
@@ -129,10 +147,12 @@ resource "aws_config_config_rule" "iam-user-no-policies-check" {
     source_identifier = "IAM_USER_NO_POLICIES_CHECK"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "iam-group-has-users-check" {
+  count = var.enabled
+
   name        = "iam-group-has-users-check"
   description = "Checks whether IAM groups have at least one IAM user."
 
@@ -141,10 +161,12 @@ resource "aws_config_config_rule" "iam-group-has-users-check" {
     source_identifier = "IAM_GROUP_HAS_USERS_CHECK"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "rds-storage-encrypted" {
+  count = var.enabled
+
   name        = "rds-storage-encrypted"
   description = "Checks whether storage encryption is enabled for your RDS DB instances."
 
@@ -153,10 +175,12 @@ resource "aws_config_config_rule" "rds-storage-encrypted" {
     source_identifier = "RDS_STORAGE_ENCRYPTED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "rds-instance-public-access-check" {
+  count = var.enabled
+
 
   name        = "rds-instance-public-access-check"
   description = "Checks whether the Amazon Relational Database Service (RDS) instances are not publicly accessible. The rule is non-compliant if the publiclyAccessible field is true in the instance configuration item."
@@ -166,10 +190,12 @@ resource "aws_config_config_rule" "rds-instance-public-access-check" {
     source_identifier = "RDS_INSTANCE_PUBLIC_ACCESS_CHECK"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "rds-snapshots-public-prohibited" {
+  count = var.enabled
+
   name        = "rds-snapshots-public-prohibited"
   description = "Checks if Amazon Relational Database Service (Amazon RDS) snapshots are public."
 
@@ -178,10 +204,11 @@ resource "aws_config_config_rule" "rds-snapshots-public-prohibited" {
     source_identifier = "RDS_SNAPSHOTS_PUBLIC_PROHIBITED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "guardduty-enabled-centralized" {
+  count = var.enabled
 
   name        = "guardduty-enabled-centralized"
   description = "Checks whether Amazon GuardDuty is enabled in your AWS account and region."
@@ -193,10 +220,12 @@ resource "aws_config_config_rule" "guardduty-enabled-centralized" {
 
   maximum_execution_frequency = var.config_max_execution_frequency
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "s3-bucket-public-write-prohibited" {
+  count = var.enabled
+
   name        = "s3-bucket-public-write-prohibited"
   description = "Checks that your S3 buckets do not allow public write access."
 
@@ -205,10 +234,12 @@ resource "aws_config_config_rule" "s3-bucket-public-write-prohibited" {
     source_identifier = "S3_BUCKET_PUBLIC_WRITE_PROHIBITED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "s3-bucket-versioning-enabled" {
+  count = var.enabled
+
   name        = "s3-bucket-versioning-enabled"
   description = "Checks whether versioning is enabled for your S3 buckets. Optionally, the rule checks if MFA delete is enabled for your S3 buckets."
 
@@ -217,10 +248,12 @@ resource "aws_config_config_rule" "s3-bucket-versioning-enabled" {
     source_identifier = "S3_BUCKET_VERSIONING_ENABLED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "s3-bucket-server-side-encryption-enabled" {
+  count = var.enabled
+
   name        = "s3-bucket-server-side-encryption-enabled"
   description = "Checks that your Amazon S3 bucket either has Amazon S3 default encryption enabled or that the S3 bucket policy explicitly denies put-object requests without server side encryption."
 
@@ -229,10 +262,12 @@ resource "aws_config_config_rule" "s3-bucket-server-side-encryption-enabled" {
     source_identifier = "S3_BUCKET_SERVER_SIDE_ENCRYPTION_ENABLED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "elasticsearch-encryption-at-rest" {
+  count = var.enabled
+
   name        = "elasticsearch-encryption-at-rest"
   description = "Checks whether Amazon Elasticsearch Service (Amazon ES) domains have encryption at rest configuration enabled"
 
@@ -241,10 +276,12 @@ resource "aws_config_config_rule" "elasticsearch-encryption-at-rest" {
     source_identifier = "ELASTICSEARCH_ENCRYPTED_AT_REST"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "ec2-instance-no-public-ip" {
+  count = var.enabled
+
   name        = "ec2-instance-no-public-ip"
   description = "Checks whether Amazon Elastic Compute Cloud (Amazon EC2) instances have a public IP association."
 
@@ -253,10 +290,12 @@ resource "aws_config_config_rule" "ec2-instance-no-public-ip" {
     source_identifier = "EC2_INSTANCE_NO_PUBLIC_IP"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "ec2-instances-in-vpc" {
+  count = var.enabled
+
   name        = "ec2-instances-in-vpc"
   description = "Checks whether your EC2 instances belong to a virtual private cloud (VPC)"
 
@@ -265,10 +304,12 @@ resource "aws_config_config_rule" "ec2-instances-in-vpc" {
     source_identifier = "INSTANCES_IN_VPC"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "ec2-instance-detailed-monitoring-enabled" {
+  count = var.enabled
+
   name        = "ec2-instance-detailed-monitoring-enabled"
   description = "Checks whether detailed monitoring is enabled for EC2 instances."
 
@@ -277,10 +318,12 @@ resource "aws_config_config_rule" "ec2-instance-detailed-monitoring-enabled" {
     source_identifier = "EC2_INSTANCE_DETAILED_MONITORING_ENABLED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "elb-logging-enabled" {
+  count = var.enabled
+
   name        = "elb-logging-enabled"
   description = "Checks whether the Application Load Balancers and the Classic Load Balancers have logging enabled."
 
@@ -289,10 +332,12 @@ resource "aws_config_config_rule" "elb-logging-enabled" {
     source_identifier = "ELB_LOGGING_ENABLED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "encrypted-volumes" {
+  count = var.enabled
+
   name        = "encrypted-volumes"
   description = "Checks whether the EBS volumes that are in an attached state are encrypted."
 
@@ -301,10 +346,12 @@ resource "aws_config_config_rule" "encrypted-volumes" {
     source_identifier = "ENCRYPTED_VOLUMES"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "lambda-concurrency-check" {
+  count = var.enabled
+
   name        = "lambda-concurrency-check"
   description = "Checks whether the AWS Lambda function is configured with function-level concurrent execution limit."
 
@@ -313,10 +360,12 @@ resource "aws_config_config_rule" "lambda-concurrency-check" {
     source_identifier = "LAMBDA_CONCURRENCY_CHECK"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "lambda-function-public-access-prohibited" {
+  count = var.enabled
+
   name        = "lambda-function-public-access-prohibited"
   description = "Checks whether the AWS Lambda function policy attached to the Lambda resource prohibits public access."
 
@@ -325,7 +374,7 @@ resource "aws_config_config_rule" "lambda-function-public-access-prohibited" {
     source_identifier = "LAMBDA_FUNCTION_PUBLIC_ACCESS_PROHIBITED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 /* Disabled for the moment, a lambda function is no required use VPC to be safe, the IAM policies handle the security access
@@ -338,10 +387,12 @@ resource "aws_config_config_rule" "lambda-inside-vpc" {
     source_identifier = "LAMBDA_INSIDE_VPC"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }*/
 
 resource "aws_config_config_rule" "restricted-common-ports" {
+  count = var.enabled
+
   name        = "restricted-common-ports"
   description = "Checks whether the incoming SSH traffic for the security groups is accessible to the specified ports."
 
@@ -350,10 +401,12 @@ resource "aws_config_config_rule" "restricted-common-ports" {
     source_identifier = "RESTRICTED_INCOMING_TRAFFIC"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "restricted-ssh" {
+  count = var.enabled
+
   name        = "restricted-ssh"
   description = "Checks whether the incoming SSH traffic for the security groups is accessible."
 
@@ -362,7 +415,7 @@ resource "aws_config_config_rule" "restricted-ssh" {
     source_identifier = "INCOMING_SSH_DISABLED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 /* Disabled for the moment the Cache is too expensive
@@ -376,10 +429,12 @@ resource "aws_config_config_rule" "api-gw-cache-enabled-and-encrypted" {
     source_identifier = "API_GW_CACHE_ENABLED_AND_ENCRYPTED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }*/
 
 resource "aws_config_config_rule" "vpc-sg-open-only-to-authorized-ports" {
+  count = var.enabled
+
   name        = "vpc-sg-open-only-to-authorized-ports"
   description = "Checks whether the security group with 0.0.0.0/0 of any Amazon Virtual Private Cloud (Amazon VPC) allows only specific inbound TCP or UDP traffic. The rule and any security group with inbound 0.0.0.0/0."
 
@@ -388,10 +443,12 @@ resource "aws_config_config_rule" "vpc-sg-open-only-to-authorized-ports" {
     source_identifier = "VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "db-instance-backup-enabled" {
+  count = var.enabled
+
   name        = "db-instance-backup-enabled"
   description = "Checks whether RDS DB instances have backups enabled. Optionally, the rule checks the backup retention period and the backup window"
 
@@ -400,10 +457,12 @@ resource "aws_config_config_rule" "db-instance-backup-enabled" {
     source_identifier = "DB_INSTANCE_BACKUP_ENABLED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "eip-attached" {
+  count = var.enabled
+
   name        = "eip-attached"
   description = "Checks whether all Elastic IP addresses that are allocated to a VPC are attached to EC2 instances or in-use elastic network interfaces (ENIs)."
 
@@ -412,10 +471,12 @@ resource "aws_config_config_rule" "eip-attached" {
     source_identifier = "EIP_ATTACHED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_config_rule" "cmk-backing-key-rotation-enabled" {
+  count = var.enabled
+
   name        = "cmk-backing-key-rotation-enabled"
   description = "Checks that key rotation is enabled for each customer master key (CMK). The rule is COMPLIANT, if the key rotation is enabled for specific key object. The rule is not applicable to CMKs that have imported key material."
 
@@ -424,5 +485,5 @@ resource "aws_config_config_rule" "cmk-backing-key-rotation-enabled" {
     source_identifier = "CMK_BACKING_KEY_ROTATION_ENABLED"
   }
 
-  depends_on = ["aws_config_configuration_recorder.main"]
+  depends_on = [aws_config_configuration_recorder.main]
 }

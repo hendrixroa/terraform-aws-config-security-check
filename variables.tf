@@ -1,36 +1,30 @@
 variable "config_aggregator_name" {
   description = "The name of the aggregator."
-  type        = "string"
   default     = "organization"
 }
 
 variable "aggregate_organization" {
   description = "Aggregate compliance data by organization"
-  type        = "string"
   default     = "false"
 }
 
 variable "config_logs_bucket" {
   description = "The S3 bucket for AWS Config logs."
-  type        = "string"
 }
 
 variable "config_logs_prefix" {
   description = "The S3 prefix for AWS Config logs."
   default     = "config"
-  type        = "string"
 }
 
 variable "config_max_execution_frequency" {
   description = "The maximum frequency with which AWS Config runs evaluations for a rule."
   default     = "TwentyFour_Hours"
-  type        = "string"
 }
 
 variable "config_delivery_frequency" {
   description = "The frequency with which AWS Config delivers configuration snapshots."
   default     = "Six_Hours"
-  type        = "string"
 }
 
 variable "acm_days_to_expiration" {
@@ -97,3 +91,5 @@ variable "check_cloud_trail_log_file_validation" {
   description = "Enable cloud-trail-log-file-validation-enabled rule"
   default     = false
 }
+
+variable "enabled" {}

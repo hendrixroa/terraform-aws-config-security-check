@@ -12,7 +12,7 @@ The following AWS Config Rules are supported:
 * rds-storage-encrypted: Checks whether storage encryption is enabled for your RDS DB instances.
 * s3-bucket-public-write-prohibited: Checks that your S3 buckets do not allow public write access.
 
-- Terraform `0.12.+`
+- Terraform `0.13.+`
 
 And more...
 
@@ -22,7 +22,7 @@ And more...
 
 ```hcl
 module "security-checking" {
-  source                 = "hendrixroa/cloudtrail-security-check/aws"
+  source                 = "hendrixroa/config-security-check/aws"
   config_logs_bucket     = aws_s3_bucket.mybucket.bucket
   config_aggregator_name = "My Organization"
 }
